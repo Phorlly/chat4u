@@ -1,3 +1,4 @@
+import 'package:chat4u/helpers/auth.dart';
 import 'package:chat4u/main.dart';
 import 'package:flutter/material.dart';
 
@@ -7,7 +8,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  bool isAnimated = false;
+  var isAnimated = false;
 
   @override
   void initState() {
@@ -26,7 +27,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: true,
-        title: Text('Welcome to Chat 4U'),
+        title: Text('Welcome to Login'),
       ),
       body: Stack(
         children: [
@@ -47,20 +48,21 @@ class _LoginPageState extends State<LoginPage> {
                   backgroundColor: Color.fromARGB(255, 223, 255, 187),
                   shape: StadiumBorder(),
                   elevation: 2),
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, "/home");
+              onPressed: () async {
+                await Auth.login(context, routeName: "/home");
               },
               icon: Image.asset('images/google.png', height: mq.height * .03),
               label: RichText(
                 text: TextSpan(
-                    style: TextStyle(color: Colors.black, fontSize: 16),
-                    children: [
-                      TextSpan(text: "Sign In with "),
-                      TextSpan(
-                        text: "Google",
-                        style: TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                    ]),
+                  style: TextStyle(color: Colors.black, fontSize: 16),
+                  children: [
+                    TextSpan(text: "Login with "),
+                    TextSpan(
+                      text: "Google",
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
