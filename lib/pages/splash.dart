@@ -2,7 +2,6 @@ import 'package:chat4u/helpers/api.dart';
 import 'package:chat4u/helpers/link.dart';
 import 'package:chat4u/main.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class SplashPage extends StatefulWidget {
   @override
@@ -15,12 +14,12 @@ class _SplashPageState extends State<SplashPage> {
     super.initState();
     Future.delayed(Duration(seconds: 2), () {
       //exit fullscreen
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-      SystemChrome.setSystemUIOverlayStyle(
-        SystemUiOverlayStyle(
-            statusBarColor: Colors.white,
-            systemNavigationBarColor: Colors.white),
-      );
+      // SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      // SystemChrome.setSystemUIOverlayStyle(
+      //   SystemUiOverlayStyle(
+      //       statusBarColor: Colors.white,
+      //       systemNavigationBarColor: Colors.white),
+      // );
 
       // log('\nUser: ${Api.auth.currentUser}');
       Api.auth.currentUser != null

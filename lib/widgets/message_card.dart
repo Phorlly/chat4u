@@ -39,9 +39,9 @@ class _MessageCardState extends State<MessageCard> {
               border: Border.all(color: Colors.lightBlue),
               color: Colors.lightBlueAccent,
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30),
-                topRight: Radius.circular(26),
-                bottomRight: Radius.circular(30),
+                topLeft: Radius.circular(25),
+                topRight: Radius.circular(12),
+                bottomRight: Radius.circular(12),
               ),
             ),
             child: Text(
@@ -107,9 +107,9 @@ class _MessageCardState extends State<MessageCard> {
               border: Border.all(color: Colors.lightGreen),
               color: Colors.greenAccent,
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30),
-                topRight: Radius.circular(26),
-                bottomLeft: Radius.circular(30),
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(25),
+                bottomLeft: Radius.circular(12),
               ),
             ),
             child: Text(

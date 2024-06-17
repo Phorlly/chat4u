@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:chat4u/helpers/api.dart';
@@ -45,7 +46,7 @@ class Auth {
       // Once signed in, return the UserCredential
       return await Api.auth.signInWithCredential(credential);
     } catch (err) {
-      // log('\nsignInWithGoogle: $err');
+      log('\n signInWithGoogle: $err');
       ShowDialog.showSnakbar(context,
           message: 'Something when wrong (Check Internet!): $err');
       return null;

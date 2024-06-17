@@ -22,7 +22,7 @@ class Api {
   //to return current user
   static User get user => auth.currentUser!;
 
-  //for storing selt information
+  //for storing set information
   static late UserModel me;
 
   //for upload image files
