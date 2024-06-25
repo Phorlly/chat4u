@@ -1,19 +1,31 @@
-import 'package:chat4u/helpers/api.dart';
 import 'package:chat4u/main.dart';
 import 'package:chat4u/models/user.dart';
 import 'package:flutter/material.dart';
 
 class Bottombar extends StatefulWidget {
   final UserModel user;
-  const Bottombar({super.key, required this.user});
+  final TextEditingController inputMessage;
+  final void Function()? showEmoji,
+      sendMessage,
+      fromCamera,
+      fromGallery,
+      clickTap;
+
+  const Bottombar(
+      {super.key,
+      required this.user,
+      required this.inputMessage,
+      required this.showEmoji,
+      required this.sendMessage,
+      required this.fromCamera,
+      required this.fromGallery,
+      required this.clickTap});
 
   @override
   State<Bottombar> createState() => _BottombarState();
 }
 
 class _BottombarState extends State<Bottombar> {
-  final message = new TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -26,7 +38,7 @@ class _BottombarState extends State<Bottombar> {
               child: Row(
                 children: [
                   IconButton(
-                    onPressed: () {},
+                    onPressed: widget.showEmoji,
                     icon: Icon(
                       Icons.emoji_emotions,
                       color: Colors.blue,
@@ -35,7 +47,8 @@ class _BottombarState extends State<Bottombar> {
                   ),
                   Expanded(
                     child: TextField(
-                      controller: message,
+                      onTap: widget.clickTap,
+                      controller: widget.inputMessage,
                       keyboardType: TextInputType.multiline,
                       maxLines: null,
                       decoration: InputDecoration(
@@ -46,7 +59,7 @@ class _BottombarState extends State<Bottombar> {
                     ),
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: widget.fromGallery,
                     icon: Icon(
                       Icons.image_rounded,
                       color: Colors.blue,
@@ -54,7 +67,7 @@ class _BottombarState extends State<Bottombar> {
                     ),
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: widget.fromCamera,
                     icon: Icon(
                       Icons.camera_alt_outlined,
                       color: Colors.blue,
@@ -66,17 +79,7 @@ class _BottombarState extends State<Bottombar> {
             ),
           ),
           MaterialButton(
-            onPressed: () {
-              if (message.text.isNotEmpty) {
-                Api.sendMessage(model: widget.user, message: message.text)
-                    .whenComplete(() {
-                  Center(child: CircularProgressIndicator());
-                  message.text = "";
-                }).catchError((err) {
-                  print("Has error: " + err.toString());
-                });
-              }
-            },
+            onPressed: widget.sendMessage,
             // enableFeedback: false,
             minWidth: 0,
             padding: EdgeInsets.only(top: 10, bottom: 10, right: 5, left: 10),

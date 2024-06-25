@@ -44,22 +44,38 @@ class Input extends StatelessWidget {
 
 class ImageURL extends StatelessWidget {
   final String image;
-  final double hb, wh;
+  final double? wh, size;
+  final IconData? icon;
+  final double hb;
 
   const ImageURL(
-      {super.key, required this.image, required this.hb, required this.wh});
+      {super.key,
+      required this.image,
+      required this.hb,
+      this.wh,
+      this.icon = Icons.person,
+      this.size = 50});
 
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(mq.height * hb),
+      borderRadius: BorderRadius.circular(hb),
       child: CachedNetworkImage(
-        width: mq.height * wh,
-        height: mq.height * wh,
+        width: wh,
+        height: wh,
         fit: BoxFit.fill,
         imageUrl: image,
+        placeholder: (context, url) => Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+          ),
+        ),
         errorWidget: (context, url, error) => CircleAvatar(
-          child: Icon(Icons.person),
+          child: Icon(
+            icon,
+            size: size,
+          ),
         ),
       ),
     );

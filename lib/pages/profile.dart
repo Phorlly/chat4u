@@ -41,14 +41,17 @@ class _ProfilePageState extends State<ProfilePage> {
                   Stack(children: [
                     image != null
                         ? ImageFile(image: image!, wh: .2, hb: .1)
-                        : ImageURL(image: widget.user.image, wh: .2, hb: .1),
+                        : ImageURL(
+                            image: widget.user.image,
+                            wh: mq.height * .2,
+                            hb: mq.height * .1),
                     Positioned(
                       bottom: 0,
                       right: 0,
                       child: MaterialButton(
                         elevation: 1,
                         onPressed: () {
-                          showBottomSheet(context);
+                          showBottomSheet();
                         },
                         shape: CircleBorder(),
                         color: Colors.white,
@@ -86,7 +89,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       if (formKey.currentState!.validate()) {
                         formKey.currentState!.save();
                         await Api.updateUser().whenComplete(() {
-                          ShowDialog.showTimerSnackbar(
+                          ShowDialog.timeSnackbar(
                             context,
                             message: "Has been updated!",
                             // snackbarType: AnimatedSnackBarType.info,
@@ -118,7 +121,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void showBottomSheet(context) {
+  void showBottomSheet() {
     showModalBottomSheet(
         context: context,
         shape: RoundedRectangleBorder(
@@ -154,7 +157,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           image = value.toString();
                         });
                         await Api.updateProfile(File(image!)).whenComplete(() {
-                          ShowDialog.showTimerSnackbar(
+                          ShowDialog.timeSnackbar(
                             context,
                             message: "Has been updated!",
                             // snackbarType: AnimatedSnackBarType.info,
@@ -175,7 +178,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         });
                         print("The image path => $image");
                         Api.updateProfile(File(image!)).whenComplete(() {
-                          ShowDialog.showTimerSnackbar(
+                          ShowDialog.timeSnackbar(
                             context,
                             message: "Has been updated!",
                             // snackbarType: AnimatedSnackBarType.info,

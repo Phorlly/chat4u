@@ -5,6 +5,7 @@ import 'package:chat4u/main.dart';
 import 'package:chat4u/models/user.dart';
 import 'package:chat4u/widgets/user_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -20,6 +21,22 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     Api.getCurrentUser();
+    //for setting user status to active
+    // Api.updateActiveStatus(true);
+
+    //for updating user active status according to lifecycle envents
+    //resume --active or online
+    //pause --inactive or offline
+    SystemChannels.lifecycle.setMessageHandler((message) {
+      print("Your message is: $message");
+
+      if (Api.auth.currentUser != null) {
+        if (message.toString().contains("resume")) Api.updateActiveStatus(true);
+        if (message.toString().contains("pause")) Api.updateActiveStatus(false);
+      }
+
+      return Future.value(message);
+    });
   }
 
   @override
@@ -44,9 +61,7 @@ class _HomePageState extends State<HomePage> {
                   onChanged: (val) {
                     search.clear();
                     for (var item in listItems) {
-                      if (item.name
-                              .toLowerCase()
-                              .contains(val.toLowerCase()) ||
+                      if (item.name.toLowerCase().contains(val.toLowerCase()) ||
                           item.email
                               .toLowerCase()
                               .contains(val.toLowerCase())) {
@@ -82,7 +97,7 @@ class _HomePageState extends State<HomePage> {
               case ConnectionState.waiting:
               case ConnectionState.none:
                 return Center(child: CircularProgressIndicator());
-      
+
               //if some  or all data is loaded then show it
               case ConnectionState.active:
               case ConnectionState.done:
@@ -90,18 +105,16 @@ class _HomePageState extends State<HomePage> {
                 listItems = datas!
                     .map((res) => UserModel.fromJson(res.data()))
                     .toList();
-      
+
                 if (listItems.isNotEmpty) {
                   return ListView.builder(
-                      itemCount:
-                          isSearching ? search.length : listItems.length,
+                      itemCount: isSearching ? search.length : listItems.length,
                       physics: BouncingScrollPhysics(),
                       padding: EdgeInsets.only(top: mq.height * .01),
                       itemBuilder: (context, index) {
                         return UserCard(
-                            user: isSearching
-                                ? search[index]
-                                : listItems[index]);
+                            user:
+                                isSearching ? search[index] : listItems[index]);
                       });
                 } else {
                   return Center(

@@ -1,8 +1,13 @@
+import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:chat4u/helpers/api.dart';
 import 'package:chat4u/helpers/date_util.dart';
+import 'package:chat4u/helpers/link.dart';
+import 'package:chat4u/helpers/show_dialog.dart';
 import 'package:chat4u/main.dart';
 import 'package:chat4u/models/message.dart';
+import 'package:chat4u/widgets/ui_design.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class MessageCard extends StatefulWidget {
   final MessageModel message;
@@ -16,12 +21,17 @@ class MessageCard extends StatefulWidget {
 class _MessageCardState extends State<MessageCard> {
   @override
   Widget build(BuildContext context) {
-    return Api.user.uid == widget.message.fromId
-        ? greenMessage(context)
-        : blueMessage(context);
+    bool isMe = Api.user.uid == widget.message.fromId;
+    return InkWell(
+      onLongPress: () {
+        showBottomSheet(isMe);
+        print("Your welcom");
+      },
+      child: isMe ? greenMessage() : blueMessage(),
+    );
   }
 
-  Widget blueMessage(BuildContext context) {
+  Widget blueMessage() {
     //update last read message if reader and receiver are different
     if (widget.message.read == '') {
       Api.updateStatus(model: widget.message);
@@ -32,7 +42,9 @@ class _MessageCardState extends State<MessageCard> {
       children: [
         Flexible(
           child: Container(
-            padding: EdgeInsets.all(mq.width * .04),
+            padding: EdgeInsets.all(widget.message.type == Type.image
+                ? mq.width * .001
+                : mq.width * .04),
             margin: EdgeInsets.symmetric(
                 horizontal: mq.width * .04, vertical: mq.height * .01),
             decoration: BoxDecoration(
@@ -44,10 +56,17 @@ class _MessageCardState extends State<MessageCard> {
                 bottomRight: Radius.circular(12),
               ),
             ),
-            child: Text(
-              widget.message.message,
-              style: TextStyle(fontSize: 15, color: Colors.black87),
-            ),
+            child: widget.message.type == Type.text
+                ? Text(
+                    widget.message.message,
+                    style: TextStyle(fontSize: 15, color: Colors.black87),
+                  )
+                : ImageURL(
+                    image: widget.message.message,
+                    hb: 12,
+                    size: 70,
+                    icon: Icons.image,
+                  ),
           ),
         ),
         Padding(
@@ -74,7 +93,7 @@ class _MessageCardState extends State<MessageCard> {
     );
   }
 
-  Widget greenMessage(BuildContext context) {
+  Widget greenMessage() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -100,7 +119,9 @@ class _MessageCardState extends State<MessageCard> {
         ),
         Flexible(
           child: Container(
-            padding: EdgeInsets.all(mq.width * .04),
+            padding: EdgeInsets.all(widget.message.type == Type.image
+                ? mq.width * .001
+                : mq.width * .04),
             margin: EdgeInsets.symmetric(
                 horizontal: mq.width * .04, vertical: mq.height * .01),
             decoration: BoxDecoration(
@@ -112,13 +133,161 @@ class _MessageCardState extends State<MessageCard> {
                 bottomLeft: Radius.circular(12),
               ),
             ),
-            child: Text(
-              widget.message.message,
-              style: TextStyle(fontSize: 15, color: Colors.black87),
-            ),
+            child: widget.message.type == Type.text
+                ? Text(
+                    widget.message.message,
+                    style: TextStyle(fontSize: 15, color: Colors.black87),
+                  )
+                : ImageURL(
+                    image: widget.message.message,
+                    hb: 12,
+                    size: 70,
+                    icon: Icons.image,
+                  ),
           ),
         ),
       ],
+    );
+  }
+
+  void showBottomSheet(bool isMe) {
+    showModalBottomSheet(
+        context: context,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        builder: (_) {
+          return ListView(
+            shrinkWrap: true,
+            children: [
+              Container(
+                height: 4,
+                margin: EdgeInsets.symmetric(
+                    vertical: mq.height * .015, horizontal: mq.width * .4),
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              widget.message.type == Type.image
+                  ? itemOption(
+                      icon: Icon(
+                        Icons.download_rounded,
+                        color: Colors.blue,
+                        size: 26,
+                      ),
+                      name: "Save Image",
+                      tap: () {},
+                    )
+                  : itemOption(
+                      icon: Icon(
+                        Icons.copy_all_rounded,
+                        color: Colors.blue,
+                        size: 26,
+                      ),
+                      name: "Copy Text",
+                      tap: () async {
+                        await Clipboard.setData(
+                                ClipboardData(text: widget.message.message))
+                            .whenComplete(() {
+                          LinkPage.linkBack(context);
+                          ShowDialog.animatedSnakbar(context,
+                              message: "Text Copied!",
+                              snackbarType: AnimatedSnackBarType.info);
+                        });
+                      },
+                    ),
+              if (isMe)
+                Divider(
+                  color: Colors.black54,
+                  endIndent: mq.width * .04,
+                  indent: mq.width * .04,
+                ),
+              if (widget.message.type == Type.text && isMe)
+                itemOption(
+                  icon: Icon(
+                    Icons.edit,
+                    color: Colors.blue,
+                    size: 26,
+                  ),
+                  name: "Edit Message",
+                  tap: () {},
+                ),
+              if (isMe)
+                itemOption(
+                  icon: Icon(
+                    Icons.delete_forever,
+                    color: Colors.red,
+                    size: 26,
+                  ),
+                  name: "Delete Message",
+                  tap: () async {
+                    await Api.deleteMessage(model: widget.message)
+                        .whenComplete(() {
+                      LinkPage.linkBack(context);
+                      ShowDialog.animatedSnakbar(context,
+                          message: "Message Deleted!",
+                          snackbarType: AnimatedSnackBarType.success);
+                    });
+                  },
+                ),
+              Divider(
+                color: Colors.black54,
+                endIndent: mq.width * .04,
+                indent: mq.width * .04,
+              ),
+              itemOption(
+                icon: Icon(
+                  Icons.remove_red_eye,
+                  color: Colors.blue,
+                  size: 26,
+                ),
+                name:
+                    "Sent At: ${DateUtil.getMessageTime(context, time: widget.message.sent)}",
+                tap: () {},
+              ),
+              itemOption(
+                icon: Icon(
+                  Icons.remove_red_eye,
+                  color: Colors.green,
+                  size: 26,
+                ),
+                name: widget.message.read == null
+                    ? "Read At: Not seen yet!"
+                    : "Read At: ${DateUtil.getMessageTime(context, time: widget.message.read)}",
+                tap: () {},
+              ),
+            ],
+          );
+        });
+  }
+
+  Widget itemOption(
+      {required Icon icon, required String name, required VoidCallback tap}) {
+    return InkWell(
+      onTap: () => tap(),
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: mq.width * .05,
+          top: mq.height * .015,
+          bottom: mq.height * .015,
+        ),
+        child: Row(
+          children: [
+            icon,
+            Flexible(
+              child: Text(
+                '  $name',
+                style: TextStyle(
+                    fontSize: 15, color: Colors.black54, letterSpacing: .5),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

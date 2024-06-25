@@ -12,17 +12,21 @@ class Auth {
   static var context;
 
   //logout function
-  static Future<void> logout(context, {routName = ""}) async {
+  static Future<void> logout(context, {required String routName}) async {
     try {
-      ShowDialog.showProgressbar(context);
+      ShowDialog.pogressbar(context);
+
+      await Api.updateActiveStatus(false);
       await Api.auth.signOut().then((_) async {
         LinkPage.linkBack(context);
+        Api.auth = FirebaseAuth.instance;
+
         await GoogleSignIn().signOut().whenComplete(() {
           LinkPage.linkReplaceName(context, route: routName);
         });
       });
     } catch (err) {
-      ShowDialog.showSnakbar(context, message: 'Has a problem is: $err');
+      ShowDialog.snakbar(context, message: 'Has a problem is: $err');
     }
   }
 
@@ -47,15 +51,15 @@ class Auth {
       return await Api.auth.signInWithCredential(credential);
     } catch (err) {
       log('\n signInWithGoogle: $err');
-      ShowDialog.showSnakbar(context,
+      ShowDialog.snakbar(context,
           message: 'Something when wrong (Check Internet!): $err');
       return null;
     }
   }
 
-  static Future<void> login(context, {routeName}) async {
+  static Future<void> login(context, {required String routeName}) async {
     try {
-      ShowDialog.showProgressbar(context);
+      ShowDialog.pogressbar(context);
       await signInWithGoogle(context).then((value) async {
         Navigator.pop(context);
 
@@ -72,7 +76,7 @@ class Auth {
         }
       });
     } catch (err) {
-      ShowDialog.showSnakbar(context, message: 'Has a problem is: $err');
+      ShowDialog.snakbar(context, message: 'Has a problem is: $err');
     }
   }
 }

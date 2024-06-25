@@ -40,6 +40,7 @@ class _ChatMessageState extends State<ChatMessage> {
 
               return listItems.isNotEmpty
                   ? ListView.builder(
+                    reverse: true,
                       itemCount: listItems.length,
                       physics: BouncingScrollPhysics(),
                       padding: EdgeInsets.only(top: mq.height * .01),
