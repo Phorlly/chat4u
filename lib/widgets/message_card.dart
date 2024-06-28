@@ -8,6 +8,7 @@ import 'package:chat4u/models/message.dart';
 import 'package:chat4u/widgets/ui_design.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 
 class MessageCard extends StatefulWidget {
   final MessageModel message;
@@ -25,7 +26,6 @@ class _MessageCardState extends State<MessageCard> {
     return InkWell(
       onLongPress: () {
         showBottomSheet(isMe);
-        print("Your welcom");
       },
       child: isMe ? greenMessage() : blueMessage(),
     );
@@ -180,7 +180,22 @@ class _MessageCardState extends State<MessageCard> {
                         size: 26,
                       ),
                       name: "Save Image",
-                      tap: () {},
+                      tap: () async {
+                        print("The imagre URL: ${widget.message.message}");
+
+                        await GallerySaver.saveImage(widget.message.message,
+                                albumName: "Chat 4U")
+                            .then((isSuccess) {
+                          LinkPage.linkBack(context);
+
+                          if (isSuccess != null && isSuccess)
+                            ShowDialog.animatedSnakbar(context,
+                                message: "Image Saved!",
+                                snackbarType: AnimatedSnackBarType.success);
+                        }).catchError((err) {
+                          print("Has error while saving the image: $err");
+                        });
+                      },
                     )
                   : itemOption(
                       icon: Icon(
@@ -196,7 +211,7 @@ class _MessageCardState extends State<MessageCard> {
                           LinkPage.linkBack(context);
                           ShowDialog.animatedSnakbar(context,
                               message: "Text Copied!",
-                              snackbarType: AnimatedSnackBarType.info);
+                              snackbarType: AnimatedSnackBarType.success);
                         });
                       },
                     ),
@@ -214,7 +229,10 @@ class _MessageCardState extends State<MessageCard> {
                     size: 26,
                   ),
                   name: "Edit Message",
-                  tap: () {},
+                  tap: () {
+                    LinkPage.linkBack(context);
+                    showUpdateMessageDialog();
+                  },
                 ),
               if (isMe)
                 itemOption(
@@ -263,6 +281,55 @@ class _MessageCardState extends State<MessageCard> {
             ],
           );
         });
+  }
+
+  void showUpdateMessageDialog() {
+    var message = widget.message.message;
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.message,
+              color: Colors.blue,
+              size: 28,
+            ),
+            Text(" Edit Message"),
+          ],
+        ),
+        content: Input(
+          initVal: message,
+          hint: "Input Message",
+          label: "Message",
+          changed: (val) => message = val,
+          icon: Icons.edit_note,
+        ),
+        actions: [
+          Button(
+            label: "Cancel",
+            icon: Icons.cancel,
+            color: Colors.black,
+            click: () {
+              LinkPage.linkBack(context);
+            },
+          ),
+          Button(
+            label: "Update",
+            icon: Icons.update,
+            color: Colors.green,
+            click: () async {
+              LinkPage.linkBack(context);
+              await Api.updateMessage(model: widget.message, message: message);
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   Widget itemOption(

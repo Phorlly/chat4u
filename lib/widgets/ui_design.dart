@@ -5,21 +5,23 @@ import 'package:chat4u/main.dart';
 import 'package:flutter/material.dart';
 
 class Input extends StatelessWidget {
-  final String initVal, hint, label;
+  final String? initVal, hint;
+  final String label;
   final TextEditingController? name;
   final IconData? icon;
   final void Function(String?)? saved;
-  final String? Function(String?)? checked;
+  final String? Function(String?)? checked, changed;
 
   const Input(
       {super.key,
-      required this.initVal,
-      required this.hint,
+      this.initVal,
+      this.hint,
       required this.label,
       this.name,
       this.icon,
       this.saved,
-      this.checked});
+      this.checked,
+      this.changed});
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +31,8 @@ class Input extends StatelessWidget {
         controller: name,
         onSaved: saved,
         validator: checked,
+        maxLines: null,
+        onChanged: changed,
         initialValue: initVal,
         decoration: InputDecoration(
           prefixIcon: Icon(icon, color: Colors.blue),

@@ -53,6 +53,24 @@ class Api {
     return (await userDoc.get()).exists;
   }
 
+  //for adding an chat user for our conversation
+  static Future<bool> addNew({required String email}) async {
+    final req = await firestore
+        .collection('users')
+        .where("email", isEqualTo: email)
+        .get();
+
+    if (req.docs.isNotEmpty && req.docs.first.id != user.uid) {
+      //user is existing
+      await userDoc.collection('friends').doc(req.docs.first.id).set({});
+
+      return true;
+    } else {
+      //user not exist
+      return false;
+    }
+  }
+
   //for initial app in firebase
   static Future<void> initFirebase() async {
     await Firebase.initializeApp(
@@ -92,11 +110,19 @@ class Api {
     await userDoc.set(model.toJson());
   }
 
+  //for getting id's of know users from firestore database
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getFriendsId() {
+    return userDoc.collection("friends").snapshots();
+  }
+
   //for getting all datas from firestore database
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getUsers() {
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getUsers(
+      {required List<String> friends}) {
+    print("Your Friend Id : $friends");
     return firestore
         .collection("users")
-        .where('id', isNotEqualTo: user.uid)
+        .where("id", whereIn: friends)
+        // .where('id', isNotEqualTo: user.uid)
         .snapshots();
   }
 
@@ -255,5 +281,13 @@ class Api {
 
     if (model.type == Type.image)
       await storage.refFromURL(model.message).delete();
+  }
+
+  static Future<void> updateMessage(
+      {required MessageModel model, required String message}) async {
+    await firestore
+        .collection("chats/${getConversationId(model.toId)}/messages/")
+        .doc(model.sent)
+        .update({"message": message});
   }
 }

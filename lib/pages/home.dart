@@ -1,8 +1,10 @@
+import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:chat4u/helpers/api.dart';
-import 'package:chat4u/helpers/auth.dart';
 import 'package:chat4u/helpers/link.dart';
+import 'package:chat4u/helpers/show_dialog.dart';
 import 'package:chat4u/main.dart';
 import 'package:chat4u/models/user.dart';
+import 'package:chat4u/widgets/ui_design.dart';
 import 'package:chat4u/widgets/user_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -90,10 +92,9 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         body: StreamBuilder(
-          stream: Api.getUsers(),
+          stream: Api.getFriendsId(),
           builder: (context, snapshot) {
             switch (snapshot.connectionState) {
-              //if data id loading
               case ConnectionState.waiting:
               case ConnectionState.none:
                 return Center(child: CircularProgressIndicator());
@@ -101,37 +102,113 @@ class _HomePageState extends State<HomePage> {
               //if some  or all data is loaded then show it
               case ConnectionState.active:
               case ConnectionState.done:
-                var datas = snapshot.data?.docs;
-                listItems = datas!
-                    .map((res) => UserModel.fromJson(res.data()))
-                    .toList();
+                return StreamBuilder(
+                  stream: Api.getUsers(
+                      friends:
+                          snapshot.data?.docs.map((val) => val.id).toList() ??
+                              []),
+                  builder: (context, snapshot) {
+                    switch (snapshot.connectionState) {
+                      //if data id loading
+                      case ConnectionState.waiting:
+                      case ConnectionState.none:
+                        return Center(child: CircularProgressIndicator());
 
-                if (listItems.isNotEmpty) {
-                  return ListView.builder(
-                      itemCount: isSearching ? search.length : listItems.length,
-                      physics: BouncingScrollPhysics(),
-                      padding: EdgeInsets.only(top: mq.height * .01),
-                      itemBuilder: (context, index) {
-                        return UserCard(
-                            user:
-                                isSearching ? search[index] : listItems[index]);
-                      });
-                } else {
-                  return Center(
-                    child: Text(
-                      "No Connections Found",
-                      style: TextStyle(fontSize: 20),
-                    ),
-                  );
-                }
+                      //if some  or all data is loaded then show it
+                      case ConnectionState.active:
+                      case ConnectionState.done:
+                        var datas = snapshot.data?.docs;
+                        listItems = datas!
+                            .map((res) => UserModel.fromJson(res.data()))
+                            .toList();
+
+                        if (listItems.isNotEmpty) {
+                          return ListView.builder(
+                              itemCount: isSearching
+                                  ? search.length
+                                  : listItems.length,
+                              physics: BouncingScrollPhysics(),
+                              padding: EdgeInsets.only(top: mq.height * .01),
+                              itemBuilder: (context, index) {
+                                return UserCard(
+                                    user: isSearching
+                                        ? search[index]
+                                        : listItems[index]);
+                              });
+                        } else {
+                          return Center(
+                            child: Text(
+                              "No Connections Found",
+                              style: TextStyle(fontSize: 20),
+                            ),
+                          );
+                        }
+                    }
+                  },
+                );
             }
           },
         ),
         floatingActionButton: FloatingActionButton(
-            onPressed: () async {
-              await Auth.logout(context, routName: "/login");
+            onPressed: () {
+              showAddFriendDialog();
             },
             child: Icon(Icons.add_comment_rounded)),
+      ),
+    );
+  }
+
+  void showAddFriendDialog() {
+    var email = "";
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.person_add,
+              color: Colors.blue,
+              size: 28,
+            ),
+            Text(" Add Friend"),
+          ],
+        ),
+        content: Input(
+          hint: "Input Email-Address",
+          label: "Email Address",
+          changed: (val) => email = val!,
+          icon: Icons.email,
+        ),
+        actions: [
+          Button(
+            label: "Cancel",
+            icon: Icons.cancel,
+            color: Colors.black,
+            click: () {
+              LinkPage.linkBack(context);
+            },
+          ),
+          Button(
+            label: "Add",
+            icon: Icons.add,
+            color: Colors.blue,
+            click: () async {
+              LinkPage.linkBack(context);
+
+              if (email.isNotEmpty)
+                await Api.addNew(email: email).then((val) {
+                  if (!val)
+                    ShowDialog.animatedSnakbar(context,
+                        message: "User does not Exists!",
+                        snackbarType: AnimatedSnackBarType.error);
+                });
+            },
+          ),
+        ],
       ),
     );
   }
